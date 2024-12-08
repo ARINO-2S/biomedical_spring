@@ -20,6 +20,7 @@ public class BiomedicalProjectApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BiomedicalProjectApplication.class, args);
+
 	}
 
 	//@Bean
@@ -43,19 +44,19 @@ public class BiomedicalProjectApplication {
 	}
 
 	//@Bean
-	@Order(3)
-	CommandLineRunner commandLineRunner3(FournisseurRepository fournisseurRepository,EquipementRepository equipementRepository, ClientRepository clientRepository){
-		return args -> {
-			Fournisseur fournisseur = Fournisseur.builder().nom("DRAGR").email("f@gmail.com").build();
-			fournisseurRepository.save(fournisseur);
-			Fournisseur fournisseur2 = Fournisseur.builder().nom("GE").email("j@gmail.com").build();
-			List<Equipement> equipements = equipementRepository.findAll();
-			Equipement equipement1 = equipements.get(0);
-			equipement1.setFournisseur(fournisseur);
-			equipementRepository.save(equipement1);
-			fournisseur.setEquipements(List.of(equipement1));
-			fournisseurRepository.save(fournisseur);
-			fournisseurRepository.findAll().forEach(e-> System.out.println(e.getEquipements()));
-		};
-	}
+//	@Order(3)
+//	CommandLineRunner commandLineRunner3(FournisseurRepository fournisseurRepository,EquipementRepository equipementRepository, ClientRepository clientRepository){
+//		return args -> {
+//			Fournisseur fournisseur = Fournisseur.builder().nomfournisseur("DRAGR").email("f@gmail.com").build();
+//			fournisseurRepository.save(fournisseur);
+//			Fournisseur fournisseur2 = Fournisseur.builder().nomfournisseur("GE").email("j@gmail.com").build();
+//			List<Equipement> equipements = equipementRepository.findAll();
+//			Equipement equipement1 = equipements.get(0);
+//			equipement1.setFournisseur(fournisseur);
+//			equipementRepository.save(equipement1);
+//			fournisseur.setEquipements(List.of(equipement1));
+//			fournisseurRepository.save(fournisseur);
+//			fournisseurRepository.findAll().forEach(e-> System.out.println(e.getEquipements()));
+//		};
+//	}
 }

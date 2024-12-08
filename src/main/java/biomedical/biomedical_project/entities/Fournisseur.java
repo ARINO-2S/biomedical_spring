@@ -15,7 +15,7 @@ public class Fournisseur {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String nom;
+    private String nomfournisseur;
     private String tele;
     private String email;
     private String adresse;

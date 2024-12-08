@@ -1,5 +1,6 @@
 package biomedical.biomedical_project.services;
 
+import biomedical.biomedical_project.dto.EquipementDTO;
 import biomedical.biomedical_project.entities.Equipement;
 import biomedical.biomedical_project.repositories.EquipementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EquipementService {
@@ -29,4 +31,11 @@ public class EquipementService {
         System.out.println(repository.findAll());
         return repository.findAll();
     }
+
+
+
+
+
+
+
 }

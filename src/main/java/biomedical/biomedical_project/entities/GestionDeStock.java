@@ -17,7 +17,7 @@ public class GestionDeStock {
     private Double priceInstr;
     private LocalDateTime dateReception;
     @OneToMany(mappedBy = "gestionDeStock")
-    private List<PieceDeRechange> pieceDeRechangeList;
+    private List<Composant> composantList;
 
 
 }
