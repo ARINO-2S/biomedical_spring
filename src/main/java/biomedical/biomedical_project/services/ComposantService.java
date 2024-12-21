@@ -1,7 +1,9 @@
 package biomedical.biomedical_project.services;
 
 import biomedical.biomedical_project.entities.Composant;
+import biomedical.biomedical_project.entities.Equipement;
 import biomedical.biomedical_project.repositories.ComposantRepository;
+import biomedical.biomedical_project.repositories.EquipementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -17,6 +19,9 @@ public class ComposantService {
 
     @Autowired
     private ComposantRepository repository;
+
+    @Autowired
+    private EquipementRepository equipementRepository;
 
     // Récupérer tous les composants
     public List<Composant> getAllComposants() {
@@ -52,4 +57,11 @@ public class ComposantService {
             logger.warn("Composant avec l'ID {} non trouvé pour suppression", id);
         }
     }
+
+
+
+
+
+
+
 }

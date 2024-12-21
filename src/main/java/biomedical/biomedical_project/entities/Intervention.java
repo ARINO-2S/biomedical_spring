@@ -38,6 +38,7 @@ public class Intervention {
 
     @ManyToOne
     private Client client;
+
     @ManyToOne
     private Equipement equipement;
 
@@ -47,6 +48,12 @@ public class Intervention {
     @OneToMany(mappedBy = "intervention")
     private List<TPlanning> planningList;
 
-    public void setCategorie(String categorie) {
+    @OneToMany(mappedBy = "intervention")
+    private List<Documentation> documentation;
+
+    // Méthode pour réinitialiser ou supprimer les dépendances
+    public void resetDependances() {
+        // Réinitialiser les valeurs dépendantes
+        this.equipement = null;
     }
 }

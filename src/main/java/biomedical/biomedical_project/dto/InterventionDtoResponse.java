@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class InterventionDtoResponse {
+    private Long id;
     private String nom;
     private InterventionType type;
     private String action;
@@ -18,6 +19,7 @@ public class InterventionDtoResponse {
     private String nomEquipement;
 
     public InterventionDtoResponse(Intervention intervention){
+        this.id = intervention.getId();
         this.nom = intervention.getNom();
         this.type = intervention.getType();
         this.action = intervention.getAction();

@@ -47,6 +47,8 @@ public class InterventionController {
             return ResponseEntity.notFound().build(); // Renvoie 404 si l'ID n'existe pas
         }
     }
+
+
     // Méthode GET pour tester la récupération
     @GetMapping
     public List<InterventionDtoResponse> getInterevention() {
@@ -77,8 +79,6 @@ public class InterventionController {
         else equipement.setInterventions(Collections.singletonList(intervention));
         equipementRepository.save(equipement);
         return new ResponseEntity<>(HttpStatus.OK);
-
-
 
     }
 

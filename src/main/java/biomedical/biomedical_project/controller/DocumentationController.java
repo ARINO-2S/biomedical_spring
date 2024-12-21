@@ -1,28 +1,28 @@
 package biomedical.biomedical_project.controller;
 
+import biomedical.biomedical_project.dto.DocumentationDTO;
+import biomedical.biomedical_project.dto.DocumentationEquipementDTO;
+import biomedical.biomedical_project.dto.ImageDTO;
+import biomedical.biomedical_project.dto.InterventionDtoResponse;
 import biomedical.biomedical_project.entities.Documentation;
+import biomedical.biomedical_project.entities.Equipement;
+import biomedical.biomedical_project.entities.Intervention;
+import biomedical.biomedical_project.repositories.DocumentationRepository;
+import biomedical.biomedical_project.repositories.EquipementRepository;
 import biomedical.biomedical_project.services.DocumentationService;
-import org.apache.tomcat.util.file.ConfigurationSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.Document;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 
 @Service
@@ -34,93 +34,139 @@ public class DocumentationController {
     @Autowired
     private DocumentationService documentationService;
 
+    @Autowired
+    private EquipementRepository equipementRepository;
+
+    @Autowired
+    private DocumentationRepository documentationRepository;
 
 
-    @PostMapping("/add")
-    public ResponseEntity<Object> addDocument(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("type") String type,
-                                              @RequestParam("format") String format,
-                                              @RequestParam("nom") String nom) throws IOException {
 
-        // Vérification du type MIME du fichier
-        String mimeType = file.getContentType();
+    @PostMapping
+    public ResponseEntity<Documentation> addDocumentation(
+            @RequestParam String nom,
+            @RequestParam String type,
+            @RequestParam("fileData") MultipartFile fileData) throws IOException {
 
-        if (mimeType == null || !mimeType.equals("application/pdf")) {
-            // Retourner un message d'erreur structuré en cas d'absence de type MIME valide
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Le fichier doit être un PDF");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        // Sauvegarder le document
-        Documentation documentation = documentationService.saveDocument(file.getBytes(), type, format, nom);
+        Documentation documentation = documentationService.addDocumentation(nom, type, fileData);
         return ResponseEntity.ok(documentation);
     }
 
 
 
-
-    // Supprimer un document
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteDocument(@PathVariable Integer id) {
-        documentationService.deleteDocument(id);
-        return ResponseEntity.ok("Document supprimé avec succès !");
-    }
-
-    // Liste des documents
-    @GetMapping("/list")
-    public List<Documentation> getAllDocuments() {
-        return documentationService.getAllDocuments();
-    }
-
+    // API pour récupérer une documentation par ID
     @GetMapping("/{id}")
-    public ResponseEntity<byte[]> getDocumentById(@PathVariable Integer id) {
-
-            Documentation documentation = documentationService.getDocumentById(id);
-
-            if (documentation == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(("Document with ID " + id + " not found").getBytes());
-            }
-
-            if (documentation.getFileData() == null || documentation.getFileData().length == 0) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body("The file data is empty".getBytes());
-            }
-
-            MediaType mediaType;
-            try {
-                mediaType = MediaType.parseMediaType(documentation.getFormat());
-            } catch (InvalidMimeTypeException e) {
-                return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                        .body(("Invalid MIME type: " + documentation.getFormat()).getBytes());
-            }
-
-            String contentDisposition = "attachment; filename=\"" + documentation.getNom() + "\"";
-
-            return ResponseEntity.ok()
-                    .contentType(mediaType) // Format du fichier
-                    .header("Content-Disposition", contentDisposition) // Téléchargement direct
-                    .body(documentation.getFileData());
-
+    public ResponseEntity<DocumentationEquipementDTO> getDocumentationById(@PathVariable Integer id) {
+        Optional<Documentation> documentation = documentationService.getDocumentationById(id);
+        return documentation.map(doc -> ResponseEntity.ok(new DocumentationEquipementDTO(doc)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 
 
-
-
-    @PostMapping("/api/documentation/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            // Exemple : sauvegarder le fichier dans un dossier
-            Path filePath = Paths.get("uploads/" + file.getOriginalFilename());
-            Files.write(filePath, file.getBytes());
-
-            return ResponseEntity.ok("Fichier importé avec succès");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de l'importation du fichier");
+    @GetMapping("/image/{id}")
+    public ResponseEntity<byte[]> getImageById(@PathVariable Integer id) {
+        Optional<Documentation> documentation = documentationService.getDocumentationById(id);
+        if (documentation.isPresent() && documentation.get().getFileData() != null) {
+            return ResponseEntity.ok()
+                    .header("Content-Type", "image/jpeg") // Ajuster selon le format réel de l'image
+                    .body(documentation.get().getFileData());
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
+
+
+
+
+
+
+    // API pour récupérer toutes les documentations
+    @GetMapping
+    public List<DocumentationEquipementDTO> getAllDocumentations() {
+        List<Documentation> documentationList =  documentationRepository.findAll();
+        return documentationList.stream().map(DocumentationEquipementDTO::new).toList();
+    }
+
+
+
+
+    @PostMapping("/addNew")
+    public ResponseEntity<Map<String, String>> addNewDocumentation(@RequestBody DocumentationDTO documentationDto) {
+        Documentation documentation = new Documentation();
+
+        // Remplissage des champs de la documentation à partir du DTO
+        documentation.setNom(documentationDto.getNom());
+        documentation.setType(documentationDto.getType());
+        documentation.setFileData(documentationDto.getFileData());
+
+        // Recherche de l'équipement associé
+        Equipement equipement = equipementRepository.findById(documentationDto.getEquipementId()).orElse(null);
+
+        if (equipement == null) {
+            // L'équipement n'a pas été trouvé
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Équipement non trouvé"));
+        }
+
+        // Sauvegarde de la documentation
+        try {
+            documentation.setEquipement(equipement);
+            documentationRepository.save(documentation);
+
+            // Mise à jour de l'équipement avec la documentation associée
+            if (equipement.getDocumentations() != null) {
+                equipement.getDocumentations().add(documentation);
+            } else {
+                equipement.setDocumentations(Collections.singletonList(documentation));
+            }
+
+            equipementRepository.save(equipement);
+
+            // Réponse avec message de succès
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Map.of("message", "Documentation ajoutée avec succès"));
+
+        } catch (Exception e) {
+            // Gestion des erreurs lors de l'ajout
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors de l'ajout de la documentation", "error", e.getMessage()));
+        }
+    }
+
+
+
+
+    // API pour supprimer une documentation par ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteDocumentationById(@PathVariable Integer id) {
+        try {
+            // Vérification si la documentation existe
+            Optional<Documentation> documentation = documentationRepository.findById(id);
+
+            if (documentation.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Documentation non trouvée"));
+            }
+
+            // Suppression de la documentation
+            documentationRepository.deleteById(id);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Map.of("message", "Documentation supprimée avec succès"));
+
+        } catch (Exception e) {
+            // Gestion des erreurs
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors de la suppression de la documentation", "error", e.getMessage()));
+        }
+    }
+
+
+
+
+
+
 
 
 }

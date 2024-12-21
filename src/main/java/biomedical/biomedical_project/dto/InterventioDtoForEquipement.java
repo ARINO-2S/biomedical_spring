@@ -10,11 +10,15 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class InterventioDtoForEquipement {
+    private Long id;
+    private String nom;
     private InterventionType type;
     private LocalDate date;
     private String action;
 
     public InterventioDtoForEquipement(Intervention intervention) {
+        this.id = intervention.getId();
+        this.nom = intervention.getNom();
         this.type = intervention.getType();
         this.date = intervention.getDate();
         this.action = intervention.getAction();

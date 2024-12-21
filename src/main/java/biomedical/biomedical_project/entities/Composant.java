@@ -8,6 +8,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 
@@ -28,10 +29,15 @@ public class Composant {
         private double disponibilite;
         private double dureevie;
         private double tbf;
+        private String marque;
+        private String sn;
+
+        @Transient
+        private long dureeUtilisation;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        private Date datefonction;
+        private LocalDate datefonction;
 
         @ManyToOne
         private Fournisseur Composant;
@@ -45,12 +51,39 @@ public class Composant {
 
 
 
-        public Date getDateFonction() {
+        public LocalDate getDateFonction() {
                 return datefonction;
         }
 
-        public void setDateFonction(Date datefonction) {
+        public void setDateFonction(LocalDate datefonction) {
                 this.datefonction = datefonction;
         }
+
+
+        // Méthode pour réinitialiser ou supprimer les dépendances
+        public void resetDependances() {
+                // Réinitialiser les valeurs dépendantes
+                this.fiabilite = 0.0;
+                this.tbf = 0.0;
+                // Supprimer toute autre relation si nécessaire
+        }
+
+
+        // Méthode pour calculer la durée d'utilisation
+        public long getDureeUtilisation() {
+                if (datefonction != null) {
+                        // Calcul de la différence entre aujourd'hui et la date de mise en fonction
+                        dureeUtilisation = ChronoUnit.DAYS.between(datefonction, LocalDate.now());
+                        //           dureeUtilisation = ChronoUnit.SECONDS.between(dateFonctionnement.atStartOfDay(), LocalDateTime.now());
+                        //           dureeUtilisation = ChronoUnit.MINUTES.between(dateFonctionnement.atStartOfDay(), LocalDateTime.now());
+
+                } else {
+                        dureeUtilisation = 0;
+                }
+                return dureeUtilisation;
+        }
+
+
+
 
 }

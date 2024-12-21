@@ -1,6 +1,7 @@
 package biomedical.biomedical_project.services;
 
 import biomedical.biomedical_project.dto.EquipementDTO;
+import biomedical.biomedical_project.entities.Composant;
 import biomedical.biomedical_project.entities.Equipement;
 import biomedical.biomedical_project.repositories.EquipementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class EquipementService {
     }
 
 
-
+//
 
 
 

@@ -1,6 +1,7 @@
 package biomedical.biomedical_project.dto;
 
 
+import biomedical.biomedical_project.entities.Documentation;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
@@ -12,12 +13,12 @@ public class DocumentationDTO {
 
     private Integer id;
     private String type;
-    private byte[] file;
-    private String format;
+    private byte[] fileData;
     private String nom;
+    private Integer equipementId;
 
 
-//    public DocumentationDto(Documentation documentation){
+//    public void documentationOpt(Documentation documentation){
 //
 //    }
 

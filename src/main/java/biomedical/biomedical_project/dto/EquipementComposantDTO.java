@@ -4,13 +4,13 @@ package biomedical.biomedical_project.dto;
 import biomedical.biomedical_project.entities.Equipement;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpStatusCode;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
-public class EquipementDtoResponse{
+public class EquipementComposantDTO {
     private Integer id;
     private String nom;
     private String marque;
@@ -19,12 +19,11 @@ public class EquipementDtoResponse{
     private String service;
     private LocalDate dateFonctionnement;
     private Integer garantie;
-    private double fiabilite;
-    private double disponibilite;
-    private double mtbf;
-    private long dureeUtilisation;
+//    List<DocumentationDtoForEquipement> documentations;
+    List<InterventioDtoForEquipement> interventions;
+    List<ComposantDtoForEquipement> composants;
 
-    public EquipementDtoResponse(Equipement equipement) {
+    public EquipementComposantDTO(Equipement equipement) {
         this.id = equipement.getId();
         this.nom= equipement.getDesignation();
         this.marque= equipement.getMarque();
@@ -33,9 +32,11 @@ public class EquipementDtoResponse{
         this.service= equipement.getService();
         this.garantie= equipement.getGarantie();
         this.dateFonctionnement = equipement.getDateFonctionnement();
-        this.fiabilite= equipement.getFiabilite();
-        this.disponibilite= equipement.getDisponibilite();
-        this.mtbf= equipement.getMtbf();
-        this.dureeUtilisation= equipement.getDureeUtilisation();
+        this.interventions = equipement.getInterventions().stream().map(InterventioDtoForEquipement::new).toList();
+        this.composants = equipement.getComposants().stream().map(ComposantDtoForEquipement::new).toList();
+//        this.documentations = equipement.getDocumentations().stream().map(DocumentationDtoForEquipement::new).toList();
+
     }
+
+
 }

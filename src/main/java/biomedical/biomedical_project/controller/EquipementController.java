@@ -1,12 +1,11 @@
 package biomedical.biomedical_project.controller;
 
-import biomedical.biomedical_project.dto.EquipementDTO;
-import biomedical.biomedical_project.dto.EquipementDtoResponse;
-import biomedical.biomedical_project.dto.EquipementInterventionDTO;
-import biomedical.biomedical_project.entities.Equipement;
-import biomedical.biomedical_project.entities.Fournisseur;
-import biomedical.biomedical_project.entities.Intervention;
+import biomedical.biomedical_project.dto.*;
+import biomedical.biomedical_project.entities.*;
+import biomedical.biomedical_project.repositories.ComposantRepository;
+import biomedical.biomedical_project.repositories.DocumentationRepository;
 import biomedical.biomedical_project.repositories.EquipementRepository;
+import biomedical.biomedical_project.repositories.InterventionRepository;
 import biomedical.biomedical_project.services.EquipementService;
 import biomedical.biomedical_project.services.FournisseurService;
 import biomedical.biomedical_project.services.InterventionService;
@@ -25,6 +24,15 @@ public class EquipementController {
 
     @Autowired
     private EquipementRepository equipementRepository;
+
+    @Autowired
+    private ComposantRepository composantRepository;
+
+    @Autowired
+    private InterventionRepository interventionRepository;
+
+    @Autowired
+    private DocumentationRepository documentationRepository;
 
     @Autowired
     private EquipementService equipementService;
@@ -60,13 +68,6 @@ public class EquipementController {
 
 
 
-//    @PostMapping
-//    public ResponseEntity<Equipement> createEquipement(@RequestBody Equipement equipement) {
-//        System.out.println("Données reçues : " + equipement);
-//        Equipement savedEquipement = equipementRepository.save(equipement);
-//        return ResponseEntity.ok(savedEquipement);
-//    }
-
     @PostMapping
     public ResponseEntity<?> createEquipement(@RequestBody Equipement equipement) {
         try {
@@ -76,6 +77,7 @@ public class EquipementController {
             }
 
             // Sauvegarde de l'équipement
+
             Equipement savedEquipement = equipementRepository.save(equipement);
             return ResponseEntity.ok(savedEquipement);
         } catch (Exception e) {
@@ -97,15 +99,81 @@ public class EquipementController {
 
 
 
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteEquipement(@PathVariable Integer id) {
+//        if (equipementRepository.existsById(id)) {
+//            equipementRepository.deleteById(id);
+//            return ResponseEntity.noContent().build(); // Renvoie 204 No Content
+//        } else {
+//            return ResponseEntity.notFound().build(); // Renvoie 404 si l'ID n'existe pas
+//        }
+//    }
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEquipement(@PathVariable Integer id) {
-        if (equipementRepository.existsById(id)) {
-            equipementRepository.deleteById(id);
-            return ResponseEntity.noContent().build(); // Renvoie 204 No Content
-        } else {
-            return ResponseEntity.notFound().build(); // Renvoie 404 si l'ID n'existe pas
+        // Vérifier si l'équipement existe
+        if (!equipementRepository.existsById(id)) {
+            return ResponseEntity.notFound().build(); // 404 si l'équipement n'existe pas
         }
+
+        // Récupérer les composantes liées à l'équipement
+        List<Composant> composantes = composantRepository.findByEquipementId(id);
+
+        // Traiter chaque composante avant suppression (si nécessaire)
+        for (Composant composante : composantes) {
+            // Réinitialiser les valeurs ou supprimer les relations dépendantes
+            composante.resetDependances();
+            composantRepository.delete(composante);
+        }
+
+        // Récupérer les interventions liées à l'équipement
+        List<Intervention> interventions = interventionRepository.findByEquipementId(id);
+
+        // Traiter chaque interevention avant suppression (si nécessaire)
+        for (Intervention intervention : interventions) {
+            // Réinitialiser les valeurs ou supprimer les relations dépendantes
+            intervention.resetDependances();
+            interventionRepository.delete(intervention);
+        }
+
+        // Récupérer les composantes liées à l'équipement
+        List<Documentation> documentations = documentationRepository.findByEquipementId(id);
+
+        // Traiter chaque composante avant suppression (si nécessaire)
+        for (Documentation documentation : documentations) {
+            // Réinitialiser les valeurs ou supprimer les relations dépendantes
+            documentation.resetDependances();
+            documentationRepository.save(documentation);
+        }
+
+
+
+
+
+
+
+
+
+
+        // Supprimer l'équipement
+        equipementRepository.deleteById(id);
+
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // Méthode GET pour tester la récupération
@@ -117,36 +185,32 @@ public class EquipementController {
 
 
 
-    // Méthode GET pour récupérer un équipement par ID
-    /*@GetMapping("/{Id}")
-    public ResponseEntity<EquipementDtoResponse> getEquipementById(@PathVariable Integer Id) {
-        Equipement equipement = equipementRepository.findById(Id).orElse(null);
+//// well done "intervention && composant "  --> still need to add  " Fournisseur "
+//    @GetMapping("/{Id}")
+//    public ResponseEntity<EquipementComposantDTO> getEquipementById(@PathVariable Integer Id) {
+//        Equipement equipement = equipementRepository.findById(Id).orElse(null);
+//
+//        if (equipement == null) {
+//            return ResponseEntity.notFound().build();  // Renvoie 404 si l'équipement n'est pas trouvé
+//        }
+//
+//        return ResponseEntity.ok(new EquipementComposantDTO(equipement));  // Renvoie l'équipement avec un statut 200 OK
+//    }
 
-        if (equipement == null) {
-            return ResponseEntity.notFound().build();  // Renvoie 404 si l'équipement n'est pas trouvé
-        }
 
-        return ResponseEntity.ok(new EquipementDtoResponse(equipement));  // Renvoie l'équipement avec un statut 200 OK
-    }*/
 
+
+    // well done "intervention && composant "  --> still need to add  " Fournisseur "
     @GetMapping("/{Id}")
-    public ResponseEntity<EquipementInterventionDTO> getEquipementById(@PathVariable Integer Id) {
+    public ResponseEntity<EquipementAllDTO> getEquipementById(@PathVariable Integer Id) {
         Equipement equipement = equipementRepository.findById(Id).orElse(null);
 
         if (equipement == null) {
             return ResponseEntity.notFound().build();  // Renvoie 404 si l'équipement n'est pas trouvé
         }
 
-        return ResponseEntity.ok(new EquipementInterventionDTO(equipement));  // Renvoie l'équipement avec un statut 200 OK
+        return ResponseEntity.ok(new EquipementAllDTO(equipement));  // Renvoie l'équipement avec un statut 200 OK
     }
-
-
-
-
-
-
-
-
 
 
 

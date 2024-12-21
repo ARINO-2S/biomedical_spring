@@ -14,11 +14,9 @@ public class Documentation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String type;
-    private String format;
     private String nom;
-    private String filePath;
+
 
     @Lob
     private byte[] fileData;
@@ -32,21 +30,14 @@ public class Documentation {
     @ManyToOne
     private Fournisseur fournisseur;
 
-    // Getters et Setters
-    public String getFilePath() {
-        return filePath; // This method returns the file path
-    }
+    @ManyToOne
+    private Intervention intervention;
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath; // This method sets the file path
-    }
 
-    public byte[] getFileData() {
-        return fileData;
-    }
-
-    public void setFileData(byte[] fileData) {
-        this.fileData = fileData;
+    // Méthode pour réinitialiser ou supprimer les dépendances
+    public void resetDependances() {
+        // Réinitialiser les valeurs dépendantes
+        this.equipement = null;
     }
 
 }

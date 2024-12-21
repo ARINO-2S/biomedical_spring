@@ -6,6 +6,7 @@ import biomedical.biomedical_project.entities.Compte;
 import biomedical.biomedical_project.repositories.CompteRepository;
 import biomedical.biomedical_project.services.CompteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -64,6 +65,8 @@ public class CompteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la suppression du compte.");
         }
     }
+
+
 
 
 
